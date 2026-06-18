@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model MenuCategory {
+  id    String     @id @default(cuid())
+  name  String
+  order Int        @default(0)
+  items MenuItem[]
+}
+
+model MenuItem {
+  id          String       @id @default(cuid())
+  name        String
+  price       Float
+  description String?
+  image       String?
+  available   Boolean      @default(true)
+  featured    Boolean      @default(false)
+  categoryId  String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  category    MenuCategory @relation(fields: [categoryId], references: [id])
+  orderItems  OrderItem[]
+  recipeItems RecipeItem[]
+}
+
+model Table {
+  id       String       @id @default(cuid())
+  number   Int          @unique
+  capacity Int
+  status   TableStatus  @default(AVAILABLE)
+  orders   Order[]
+  queues   QueueEntry[]
+}
+
+model QueueEntry {
+  id           String      @id @default(cuid())
+  queueNumber  Int
+  customerName String
+  partySize    Int
+  phone        String?
+  status       QueueStatus @default(WAITING)
+  tableId      String?
+  createdAt    DateTime    @default(now())
+  calledAt     DateTime?
+  seatedAt     DateTime?
+  table        Table?      @relation(fields: [tableId], references: [id])
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  orderNumber  String      @unique
+  type         OrderType   @default(DINE_IN)
+  status       OrderStatus @default(PENDING)
+  tableId      String?
+  customerName String?
+  total        Float
+  tax          Float       @default(0)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  completedAt  DateTime?
+  table        Table?      @relation(fields: [tableId], references: [id])
+  items        OrderItem[]
+}
+
+model OrderItem {
+  id         String   @id @default(cuid())
+  orderId    String
+  menuItemId String
+  quantity   Int
+  unitPrice  Float
+  note       String?
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  order      Order    @relation(fields: [orderId], references: [id])
+}
+
+model InventoryItem {
+  id           String          @id @default(cuid())
+  name         String
+  unit         String
+  currentStock Float
+  minStock     Float
+  costPerUnit  Float
+  updatedAt    DateTime        @updatedAt
+  recipeItems  RecipeItem[]
+  movements    StockMovement[]
+}
+
+model RecipeItem {
+  id              String        @id @default(cuid())
+  menuItemId      String
+  inventoryItemId String
+  quantity        Float
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  menuItem        MenuItem      @relation(fields: [menuItemId], references: [id])
+
+  @@unique([menuItemId, inventoryItemId])
+}
+
+model StockMovement {
+  id              String        @id @default(cuid())
+  inventoryItemId String
+  type            MovementType
+  quantity        Float
+  note            String?
+  createdAt       DateTime      @default(now())
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+}
+
+enum TableStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  CLEANING
+}
+
+enum QueueStatus {
+  WAITING
+  CALLED
+  SEATED
+  CANCELLED
+}
+
+enum OrderType {
+  DINE_IN
+  TAKEAWAY
+  DELIVERY
+}
+
+enum OrderStatus {
+  PENDING
+  PREPARING
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+enum MovementType {
+  IN
+  OUT
+  ADJUST
+}
