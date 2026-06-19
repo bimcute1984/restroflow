@@ -24,7 +24,7 @@ export const mockOrders: Order[] = [
       { menuItem: mockMenuItems[6], quantity: 2 },
     ],
     total: 240,
-    createdAt: new Date(Date.now() - 1000 * 60 * 12),
+    createdAt: new Date("2026-06-19T09:48:00"),
   },
   {
     id: "ORD-002",
@@ -37,7 +37,7 @@ export const mockOrders: Order[] = [
       { menuItem: mockMenuItems[9], quantity: 2 },
     ],
     total: 170,
-    createdAt: new Date(Date.now() - 1000 * 60 * 3),
+    createdAt: new Date("2026-06-19T09:57:00"),
   },
   {
     id: "ORD-003",
@@ -49,7 +49,7 @@ export const mockOrders: Order[] = [
       { menuItem: mockMenuItems[7], quantity: 1 },
     ],
     total: 135,
-    createdAt: new Date(Date.now() - 1000 * 60 * 25),
+    createdAt: new Date("2026-06-19T09:35:00"),
   },
 ];
 
@@ -76,7 +76,7 @@ export const mockQueue: QueueEntry[] = [
     partySize: 2,
     phone: "081-234-5678",
     status: "waiting",
-    createdAt: new Date(Date.now() - 1000 * 60 * 18),
+    createdAt: new Date("2026-06-19T09:42:00"),
   },
   {
     id: "Q-002",
@@ -84,8 +84,8 @@ export const mockQueue: QueueEntry[] = [
     customerName: "คุณมานะ",
     partySize: 4,
     status: "called",
-    createdAt: new Date(Date.now() - 1000 * 60 * 10),
-    calledAt: new Date(Date.now() - 1000 * 60 * 2),
+    createdAt: new Date("2026-06-19T09:50:00"),
+    calledAt: new Date("2026-06-19T09:58:00"),
   },
   {
     id: "Q-003",
@@ -94,7 +94,7 @@ export const mockQueue: QueueEntry[] = [
     partySize: 3,
     phone: "089-876-5432",
     status: "waiting",
-    createdAt: new Date(Date.now() - 1000 * 60 * 5),
+    createdAt: new Date("2026-06-19T09:55:00"),
   },
   {
     id: "Q-004",
@@ -102,7 +102,7 @@ export const mockQueue: QueueEntry[] = [
     customerName: "คุณประสิทธิ์",
     partySize: 6,
     status: "waiting",
-    createdAt: new Date(Date.now() - 1000 * 60 * 2),
+    createdAt: new Date("2026-06-19T09:58:00"),
   },
 ];
 

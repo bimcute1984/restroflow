@@ -1,12 +1,13 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { QueueEntry, QueueStatus } from "@/types";
 
-const statusCfg: Record<QueueStatus, { label: string; color: string; bg: string }> = {
-  waiting: { label: "รอ", color: "#e5c07b", bg: "#2a2010" },
-  called: { label: "เรียกแล้ว", color: "#61afef", bg: "#1e2d4a" },
-  seated: { label: "เข้านั่งแล้ว", color: "#98c379", bg: "#1e2a1e" },
-  cancelled: { label: "ยกเลิก", color: "#636d83", bg: "#1a1d27" },
+const statusCfg: Record<QueueStatus, { label: string; colorVar: string; bgVar: string; borderVar: string }> = {
+  waiting: { label: "รอ", colorVar: "--yellow", bgVar: "--yellow-bg", borderVar: "--yellow-border" },
+  called: { label: "เรียกแล้ว", colorVar: "--blue", bgVar: "--blue-bg", borderVar: "--blue-border" },
+  seated: { label: "เข้านั่งแล้ว", colorVar: "--green", bgVar: "--green-bg", borderVar: "--green-border" },
+  cancelled: { label: "ยกเลิก", colorVar: "--text-muted", bgVar: "--bg-card", borderVar: "--border" },
 };
 
 function timeWaiting(date: Date) {
@@ -15,89 +16,31 @@ function timeWaiting(date: Date) {
   return `รอ ${mins} นาที`;
 }
 
-export default function QueueList({
-  entries,
-  onCall,
-  onSeat,
-}: {
-  entries: QueueEntry[];
-  onCall?: (id: string) => void;
-  onSeat?: (id: string) => void;
-}) {
+export default function QueueList({ entries, onCall, onSeat }: { entries: QueueEntry[]; onCall?: (id: string) => void; onSeat?: (id: string) => void }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const active = entries.filter((e) => e.status === "waiting" || e.status === "called");
 
   return (
     <div className="flex flex-col gap-3">
-      {active.length === 0 && (
-        <div
-          style={{ border: "1.5px dashed #2d3141", color: "#636d83" }}
-          className="rounded-2xl p-10 text-center text-sm"
-        >
-          ไม่มีคิวรอ
-        </div>
-      )}
-
+      {active.length === 0 && <div style={{ border: "1.5px dashed var(--border)", color: "var(--text-dim)" }} className="rounded-2xl p-10 text-center text-sm">ไม่มีคิวรอ</div>}
       {active.map((entry) => {
         const cfg = statusCfg[entry.status];
         return (
-          <div
-            key={entry.id}
-            style={{
-              background: "#1a1d27",
-              border: entry.status === "called"
-                ? "1.5px solid #61afef44"
-                : "1.5px solid #2d3141",
-            }}
-            className="rounded-2xl p-4 flex items-center gap-4"
-          >
-            {/* Queue number */}
-            <div
-              style={{ background: cfg.bg, color: cfg.color }}
-              className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-xl shrink-0"
-            >
-              {entry.queueNumber}
-            </div>
-
-            {/* Info */}
+          <div key={entry.id} style={{ background: "var(--bg-card)", border: `1.5px solid var(${cfg.borderVar})`, boxShadow: "var(--card-shadow)" }} className="rounded-2xl p-3 md:p-4 flex items-center gap-3 md:gap-4 transition-all hover:translate-y-[-1px] animate-slide-up">
+            <div style={{ background: `var(${cfg.bgVar})`, color: `var(${cfg.colorVar})`, border: `1px solid var(${cfg.borderVar})` }} className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center font-bold text-lg md:text-xl shrink-0">{entry.queueNumber}</div>
             <div className="flex-1 min-w-0">
-              <div className="text-white font-semibold text-sm truncate">
-                {entry.customerName}
-              </div>
-              <div style={{ color: "#636d83" }} className="text-xs mt-0.5 flex gap-2">
+              <div style={{ color: "var(--text-primary)" }} className="font-semibold text-xs md:text-sm truncate">{entry.customerName}</div>
+              <div style={{ color: "var(--text-muted)" }} className="text-[10px] md:text-xs mt-0.5 flex gap-2">
                 <span>👥 {entry.partySize} คน</span>
-                {entry.phone && <span>📱 {entry.phone}</span>}
+                {entry.phone && <span className="hidden sm:inline">📱 {entry.phone}</span>}
               </div>
-              <div style={{ color: "#636d83" }} className="text-xs mt-1">
-                {timeWaiting(entry.createdAt)}
-              </div>
+              <div style={{ color: "var(--text-dim)" }} className="text-[10px] md:text-xs mt-1">{mounted ? timeWaiting(entry.createdAt) : ""}</div>
             </div>
-
-            {/* Status + action */}
             <div className="flex flex-col items-end gap-2 shrink-0">
-              <span
-                style={{ background: cfg.bg, color: cfg.color }}
-                className="text-xs font-semibold px-2.5 py-1 rounded-full"
-              >
-                {cfg.label}
-              </span>
-              {entry.status === "waiting" && (
-                <button
-                  onClick={() => onCall?.(entry.id)}
-                  style={{ background: "#1e2d4a", color: "#61afef" }}
-                  className="text-xs font-semibold px-3 py-1 rounded-lg"
-                >
-                  เรียก
-                </button>
-              )}
-              {entry.status === "called" && (
-                <button
-                  onClick={() => onSeat?.(entry.id)}
-                  style={{ background: "#1e2a1e", color: "#98c379" }}
-                  className="text-xs font-semibold px-3 py-1 rounded-lg"
-                >
-                  เข้านั่ง
-                </button>
-              )}
+              <span style={{ background: `var(${cfg.bgVar})`, color: `var(${cfg.colorVar})`, border: `1px solid var(${cfg.borderVar})` }} className="text-[10px] md:text-xs font-semibold px-2 md:px-2.5 py-0.5 md:py-1 rounded-full">{cfg.label}</span>
+              {entry.status === "waiting" && <button onClick={() => onCall?.(entry.id)} style={{ background: "var(--blue-grad)", color: "#fff" }} className="text-[10px] md:text-xs font-semibold px-2.5 md:px-3 py-1 rounded-lg transition-all hover:translate-y-[-1px]">เรียก</button>}
+              {entry.status === "called" && <button onClick={() => onSeat?.(entry.id)} style={{ background: "var(--green-grad)", color: "#fff" }} className="text-[10px] md:text-xs font-semibold px-2.5 md:px-3 py-1 rounded-lg transition-all hover:translate-y-[-1px]">เข้านั่ง</button>}
             </div>
           </div>
         );

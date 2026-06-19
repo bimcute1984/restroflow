@@ -1,3 +1,12 @@
+export type UserRole = "owner" | "front" | "kitchen" | "stock";
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  role: UserRole;
+  displayName: string;
+}
+
 export type OrderStatus = "pending" | "preparing" | "ready" | "completed" | "cancelled";
 export type OrderType = "dine-in" | "takeaway" | "delivery";
 export type PaymentMethod = "cash" | "promptpay" | "credit_card" | "line_pay" | "true_money";

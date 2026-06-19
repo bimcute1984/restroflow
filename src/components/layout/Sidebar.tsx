@@ -1,96 +1,177 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useTheme } from "@/lib/theme-context";
+import { useAuth } from "@/lib/auth-context";
+import { getAllowedRoutes, ROLE_LABELS, ROLE_COLORS } from "@/lib/permissions";
 
-const navItems = [
-  {
-    href: "/orders",
-    icon: "🍽️",
-    label: "สั่งอาหาร",
-    color: "#61afef",
-    bg: "#1e2d4a",
-  },
-  {
-    href: "/queue",
-    icon: "🪑",
-    label: "คิว & โต๊ะ",
-    color: "#e5c07b",
-    bg: "#2a2010",
-  },
-  {
-    href: "/inventory",
-    icon: "📦",
-    label: "สต๊อก",
-    color: "#56b6c2",
-    bg: "#1a2a2a",
-  },
-  {
-    href: "/menu",
-    icon: "📋",
-    label: "เมนู",
-    color: "#e06c75",
-    bg: "#2a1a1a",
-  },
-  {
-    href: "/reports",
-    icon: "📊",
-    label: "รายงาน",
-    color: "#98c379",
-    bg: "#1e2a1e",
-  },
+const allNavItems = [
+  { href: "/orders", icon: "🍽️", label: "สั่งอาหาร", colorVar: "--blue", bgVar: "--blue-bg", borderVar: "--blue-border" },
+  { href: "/queue", icon: "🪑", label: "คิว & โต๊ะ", colorVar: "--yellow", bgVar: "--yellow-bg", borderVar: "--yellow-border" },
+  { href: "/inventory", icon: "📦", label: "สต๊อก", colorVar: "--cyan", bgVar: "--cyan-bg", borderVar: "--cyan-border" },
+  { href: "/menu", icon: "📋", label: "เมนู", colorVar: "--red", bgVar: "--red-bg", borderVar: "--red-border" },
+  { href: "/reports", icon: "📊", label: "รายงาน", colorVar: "--green", bgVar: "--green-bg", borderVar: "--green-border" },
+  { href: "/staff", icon: "👥", label: "จัดการทีม", colorVar: "--purple", bgVar: "--purple-bg", borderVar: "--purple-border" },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const { theme, toggle } = useTheme();
+  const { profile, signOut } = useAuth();
+
+  const allowedRoutes = profile ? getAllowedRoutes(profile.role) : [];
+  const navItems = allNavItems.filter((item) => allowedRoutes.includes(item.href));
+
+  const roleColors = profile ? ROLE_COLORS[profile.role] : null;
+
+  useEffect(() => { setOpen(false); }, [pathname]);
+  useEffect(() => {
+    if (open) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
+  async function handleLogout() {
+    await signOut();
+    router.push("/login");
+  }
+
+  const userInfo = profile && roleColors && (
+    <div className="flex flex-col gap-2">
+      <div
+        style={{ background: "var(--bg-deep)", border: "1px solid var(--border)" }}
+        className="rounded-xl p-3 flex flex-col gap-1.5"
+      >
+        <div className="flex items-center justify-between">
+          <span style={{ color: "var(--text-primary)" }} className="text-xs font-semibold truncate">
+            {profile.displayName}
+          </span>
+          <span
+            style={{
+              background: `var(${roleColors.bg})`,
+              color: `var(${roleColors.color})`,
+              border: `1px solid var(${roleColors.border})`,
+            }}
+            className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0"
+          >
+            {ROLE_LABELS[profile.role]}
+          </span>
+        </div>
+        <span style={{ color: "var(--text-dim)" }} className="text-[10px] truncate">
+          {profile.email}
+        </span>
+      </div>
+      <button
+        onClick={handleLogout}
+        style={{ background: "var(--red-bg)", color: "var(--red)", border: "1px solid var(--red-border)" }}
+        className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:brightness-110 w-full"
+      >
+        ออกจากระบบ
+      </button>
+    </div>
+  );
+
+  const themeToggle = (
+    <button
+      onClick={toggle}
+      style={{ background: "var(--bg-deep)", border: "1px solid var(--border)", color: "var(--text-muted)" }}
+      className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all hover:brightness-110 w-full"
+    >
+      <span className="text-base">{theme === "dark" ? "🌙" : "☀️"}</span>
+      <span>{theme === "dark" ? "Dark Mode" : "Light Mode"}</span>
+    </button>
+  );
+
+  const nav = (
+    <>
+      {navItems.map((item) => {
+        const active = pathname.startsWith(item.href);
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            style={
+              active
+                ? { background: `var(${item.bgVar})`, color: `var(${item.colorVar})`, boxShadow: `0 0 20px var(${item.borderVar})` }
+                : { color: "var(--text-muted)" }
+            }
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-[var(--bg-hover)]"
+          >
+            <span className="text-xl shrink-0">{item.icon}</span>
+            <span className="text-sm font-medium">{item.label}</span>
+          </Link>
+        );
+      })}
+    </>
+  );
 
   return (
-    <aside
-      style={{ background: "#1a1d27", borderRight: "1px solid #2d3141" }}
-      className="w-16 md:w-56 flex flex-col h-full shrink-0"
-    >
-      {/* Logo */}
+    <>
+      {/* Mobile top bar */}
       <div
-        style={{ borderBottom: "1px solid #2d3141" }}
-        className="h-14 flex items-center px-4 shrink-0"
+        className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center h-14 px-4 gap-3"
+        style={{ background: `linear-gradient(180deg, var(--bg-base) 0%, var(--bg-base) 80%, transparent 100%)` }}
       >
-        <span className="text-white font-bold text-lg hidden md:block">
-          restro<span style={{ color: "#61afef" }}>flow</span>
+        <button
+          onClick={() => setOpen(true)}
+          className="w-9 h-9 flex items-center justify-center rounded-xl"
+          style={{ background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M3 7h18M3 12h18M3 17h18" />
+          </svg>
+        </button>
+        <span style={{ color: "var(--text-primary)" }} className="font-bold text-base">
+          restro<span style={{ color: "var(--blue)" }}>flow</span>
         </span>
-        <span className="text-white font-bold text-lg md:hidden">R</span>
+        <button
+          onClick={toggle}
+          className="ml-auto text-lg"
+          style={{ color: "var(--text-muted)" }}
+        >
+          {theme === "dark" ? "🌙" : "☀️"}
+        </button>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 py-4 flex flex-col gap-1 px-2">
-        {navItems.map((item) => {
-          const active = pathname.startsWith(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              style={
-                active
-                  ? { background: item.bg, color: item.color }
-                  : { color: "#636d83" }
-              }
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:text-white"
-            >
-              <span className="text-xl shrink-0">{item.icon}</span>
-              <span className="hidden md:block text-sm font-medium">
-                {item.label}
+      {/* Mobile drawer */}
+      {open && (
+        <div className="lg:hidden fixed inset-0 z-50 modal-overlay" onClick={() => setOpen(false)}>
+          <aside
+            className="w-64 h-full flex flex-col animate-slide-in"
+            style={{ background: `linear-gradient(180deg, var(--bg-sidebar-start), var(--bg-sidebar-end))`, borderRight: "1px solid var(--border)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="h-14 flex items-center justify-between px-5 shrink-0" style={{ borderBottom: "1px solid var(--border)" }}>
+              <span style={{ color: "var(--text-primary)" }} className="font-bold text-lg">
+                restro<span style={{ color: "var(--blue)" }}>flow</span>
               </span>
-            </Link>
-          );
-        })}
-      </nav>
+              <button onClick={() => setOpen(false)} style={{ color: "var(--text-dim)" }} className="text-lg font-bold">✕</button>
+            </div>
+            <nav className="flex-1 py-4 flex flex-col gap-1 px-3">{nav}</nav>
+            <div className="px-3 pb-2">{themeToggle}</div>
+            <div className="px-3 pb-3">{userInfo}</div>
+          </aside>
+        </div>
+      )}
 
-      {/* Footer */}
-      <div
-        style={{ borderTop: "1px solid #2d3141", color: "#636d83" }}
-        className="p-4 text-xs hidden md:block"
+      {/* Desktop sidebar */}
+      <aside
+        className="hidden lg:flex flex-col h-full w-60 shrink-0"
+        style={{ background: `linear-gradient(180deg, var(--bg-sidebar-start), var(--bg-sidebar-end))`, borderRight: "1px solid var(--border)" }}
       >
-        ร้านอาหาร · v1.0
-      </div>
-    </aside>
+        <div className="h-14 flex items-center px-5 shrink-0" style={{ borderBottom: "1px solid var(--border)" }}>
+          <span style={{ color: "var(--text-primary)" }} className="font-bold text-lg">
+            restro<span style={{ color: "var(--blue)" }}>flow</span>
+          </span>
+        </div>
+        <nav className="flex-1 py-4 flex flex-col gap-1 px-3">{nav}</nav>
+        <div className="px-3 pb-2">{themeToggle}</div>
+        <div className="px-3 pb-3">{userInfo}</div>
+      </aside>
+    </>
   );
 }

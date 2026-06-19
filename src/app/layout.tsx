@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ThemeProvider } from "@/lib/theme-context";
 
 export const metadata: Metadata = {
   title: "Restroflow",
@@ -12,8 +13,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="th" className="h-full">
-      <body className="h-full">{children}</body>
+    <html lang="th" className="h-full" suppressHydrationWarning>
+      <body className="h-full">
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }
