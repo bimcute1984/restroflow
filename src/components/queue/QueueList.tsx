@@ -15,7 +15,15 @@ function timeWaiting(date: Date) {
   return `รอ ${mins} นาที`;
 }
 
-export default function QueueList({ entries }: { entries: QueueEntry[] }) {
+export default function QueueList({
+  entries,
+  onCall,
+  onSeat,
+}: {
+  entries: QueueEntry[];
+  onCall?: (id: string) => void;
+  onSeat?: (id: string) => void;
+}) {
   const active = entries.filter((e) => e.status === "waiting" || e.status === "called");
 
   return (
@@ -74,6 +82,7 @@ export default function QueueList({ entries }: { entries: QueueEntry[] }) {
               </span>
               {entry.status === "waiting" && (
                 <button
+                  onClick={() => onCall?.(entry.id)}
                   style={{ background: "#1e2d4a", color: "#61afef" }}
                   className="text-xs font-semibold px-3 py-1 rounded-lg"
                 >
@@ -82,6 +91,7 @@ export default function QueueList({ entries }: { entries: QueueEntry[] }) {
               )}
               {entry.status === "called" && (
                 <button
+                  onClick={() => onSeat?.(entry.id)}
                   style={{ background: "#1e2a1e", color: "#98c379" }}
                   className="text-xs font-semibold px-3 py-1 rounded-lg"
                 >

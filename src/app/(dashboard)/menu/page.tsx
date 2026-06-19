@@ -3,13 +3,16 @@
 import { useState } from "react";
 import { mockCategories, mockMenuFull } from "@/lib/mock-data";
 import { MenuItemFull } from "@/types";
+import MenuItemModal from "@/components/menu/MenuItemModal";
 
 function MenuItemCard({
   item,
   onToggle,
+  onEdit,
 }: {
   item: MenuItemFull;
   onToggle: (id: string) => void;
+  onEdit: (item: MenuItemFull) => void;
 }) {
   return (
     <div
@@ -60,7 +63,6 @@ function MenuItemCard({
           ฿{item.price}
         </span>
         <div className="flex items-center gap-2">
-          {/* Toggle available */}
           <button
             onClick={() => onToggle(item.id)}
             style={
@@ -73,6 +75,7 @@ function MenuItemCard({
             {item.available ? "เปิดขาย" : "ปิดขาย"}
           </button>
           <button
+            onClick={() => onEdit(item)}
             style={{ background: "#2d3141", color: "#abb2bf" }}
             className="text-xs px-2.5 py-1 rounded-lg font-semibold"
           >
@@ -88,6 +91,7 @@ export default function MenuPage() {
   const [items, setItems] = useState<MenuItemFull[]>(mockMenuFull);
   const [selectedCat, setSelectedCat] = useState("ทั้งหมด");
   const [search, setSearch] = useState("");
+  const [modalItem, setModalItem] = useState<MenuItemFull | null | "new">(null);
 
   function toggleAvailable(id: string) {
     setItems((prev) =>
@@ -95,6 +99,15 @@ export default function MenuPage() {
         item.id === id ? { ...item, available: !item.available } : item
       )
     );
+  }
+
+  function saveItem(updated: MenuItemFull) {
+    setItems((prev) => {
+      const exists = prev.find((i) => i.id === updated.id);
+      if (exists) return prev.map((i) => (i.id === updated.id ? updated : i));
+      return [updated, ...prev];
+    });
+    setModalItem(null);
   }
 
   const categories = ["ทั้งหมด", ...mockCategories.map((c) => c.name)];
@@ -113,91 +126,108 @@ export default function MenuPage() {
   };
 
   return (
-    <div className="p-6 flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-white text-2xl font-bold">จัดการเมนู</h1>
-          <p style={{ color: "#636d83" }} className="text-sm mt-1">
-            Menu Management
-          </p>
-        </div>
-        <button
-          style={{ background: "#2a1a1a", color: "#e06c75" }}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm"
-        >
-          + เพิ่มเมนูใหม่
-        </button>
-      </div>
+    <>
+      {modalItem !== null && (
+        <MenuItemModal
+          item={modalItem === "new" ? undefined : modalItem}
+          categories={mockCategories}
+          onClose={() => setModalItem(null)}
+          onSave={saveItem}
+        />
+      )}
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[
-          { label: "เมนูทั้งหมด", value: stats.total, color: "#e06c75" },
-          { label: "เปิดขาย", value: stats.available, color: "#98c379" },
-          { label: "ปิดขาย", value: stats.unavailable, color: "#636d83" },
-          { label: "เมนูแนะนำ ⭐", value: stats.featured, color: "#e5c07b" },
-        ].map((s) => (
-          <div
-            key={s.label}
-            style={{ background: "#1a1d27", border: "1px solid #2d3141" }}
-            className="rounded-xl p-4"
-          >
-            <div style={{ color: s.color }} className="text-2xl font-bold">
-              {s.value}
-            </div>
-            <div style={{ color: "#636d83" }} className="text-xs mt-1">
-              {s.label}
-            </div>
+      <div className="p-6 flex flex-col gap-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-white text-2xl font-bold">จัดการเมนู</h1>
+            <p style={{ color: "#636d83" }} className="text-sm mt-1">
+              Menu Management
+            </p>
           </div>
-        ))}
-      </div>
+          <button
+            onClick={() => setModalItem("new")}
+            style={{ background: "#2a1a1a", color: "#e06c75" }}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm"
+          >
+            + เพิ่มเมนูใหม่
+          </button>
+        </div>
 
-      {/* Filter bar */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="flex gap-1.5 flex-wrap">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCat(cat)}
-              style={
-                selectedCat === cat
-                  ? { background: "#2a1a1a", color: "#e06c75" }
-                  : { color: "#636d83" }
-              }
-              className="text-xs font-semibold px-3 py-1.5 rounded-lg"
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: "เมนูทั้งหมด", value: stats.total, color: "#e06c75" },
+            { label: "เปิดขาย", value: stats.available, color: "#98c379" },
+            { label: "ปิดขาย", value: stats.unavailable, color: "#636d83" },
+            { label: "เมนูแนะนำ ⭐", value: stats.featured, color: "#e5c07b" },
+          ].map((s) => (
+            <div
+              key={s.label}
+              style={{ background: "#1a1d27", border: "1px solid #2d3141" }}
+              className="rounded-xl p-4"
             >
-              {cat}
-            </button>
+              <div style={{ color: s.color }} className="text-2xl font-bold">
+                {s.value}
+              </div>
+              <div style={{ color: "#636d83" }} className="text-xs mt-1">
+                {s.label}
+              </div>
+            </div>
           ))}
         </div>
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="ค้นหาเมนู..."
-          style={{
-            background: "#1a1d27",
-            border: "1px solid #2d3141",
-            color: "#fff",
-          }}
-          className="text-sm px-3 py-1.5 rounded-xl w-44 outline-none ml-auto"
-        />
-      </div>
 
-      {/* Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {filtered.map((item) => (
-          <MenuItemCard key={item.id} item={item} onToggle={toggleAvailable} />
-        ))}
-        {filtered.length === 0 && (
-          <div
-            style={{ color: "#636d83" }}
-            className="col-span-full text-center py-16 text-sm"
-          >
-            ไม่พบเมนู
+        {/* Filter bar */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex gap-1.5 flex-wrap">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCat(cat)}
+                style={
+                  selectedCat === cat
+                    ? { background: "#2a1a1a", color: "#e06c75" }
+                    : { color: "#636d83" }
+                }
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg"
+              >
+                {cat}
+              </button>
+            ))}
           </div>
-        )}
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="ค้นหาเมนู..."
+            style={{
+              background: "#1a1d27",
+              border: "1px solid #2d3141",
+              color: "#fff",
+            }}
+            className="text-sm px-3 py-1.5 rounded-xl w-44 outline-none ml-auto"
+          />
+        </div>
+
+        {/* Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {filtered.map((item) => (
+            <MenuItemCard
+              key={item.id}
+              item={item}
+              onToggle={toggleAvailable}
+              onEdit={(i) => setModalItem(i)}
+            />
+          ))}
+          {filtered.length === 0 && (
+            <div
+              style={{ color: "#636d83" }}
+              className="col-span-full text-center py-16 text-sm"
+            >
+              ไม่พบเมนู
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

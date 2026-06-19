@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { MenuItem, OrderType } from "@/types";
+import { MenuItem, Order, OrderType } from "@/types";
 import { mockMenuItems } from "@/lib/mock-data";
 
 const categories = ["ทั้งหมด", ...Array.from(new Set(mockMenuItems.map((m) => m.category)))];
 
 interface CartItem { item: MenuItem; qty: number }
 
-export default function NewOrderModal({ onClose }: { onClose: () => void }) {
+export default function NewOrderModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: (order: Order) => void }) {
   const [orderType, setOrderType] = useState<OrderType>("dine-in");
   const [tableNumber, setTableNumber] = useState("");
   const [customerName, setCustomerName] = useState("");
@@ -160,6 +160,19 @@ export default function NewOrderModal({ onClose }: { onClose: () => void }) {
               </div>
               <button
                 disabled={cart.length === 0}
+                onClick={() => {
+                  const order: Order = {
+                    id: `ORD-${Date.now()}`,
+                    type: orderType,
+                    status: "pending",
+                    tableNumber: orderType === "dine-in" && tableNumber ? Number(tableNumber) : undefined,
+                    customerName: orderType !== "dine-in" ? customerName || undefined : undefined,
+                    items: cart.map((c) => ({ menuItem: c.item, quantity: c.qty })),
+                    total,
+                    createdAt: new Date(),
+                  };
+                  onSubmit(order);
+                }}
                 style={cart.length > 0
                   ? { background: "#61afef", color: "#0f1117" }
                   : { background: "#2d3141", color: "#636d83" }}

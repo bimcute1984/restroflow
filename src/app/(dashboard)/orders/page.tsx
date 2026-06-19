@@ -41,7 +41,15 @@ export default function OrdersPage() {
 
   return (
     <>
-      {showModal && <NewOrderModal onClose={() => setShowModal(false)} />}
+      {showModal && (
+        <NewOrderModal
+          onClose={() => setShowModal(false)}
+          onSubmit={(order) => {
+            setOrders((prev) => [order, ...prev]);
+            setShowModal(false);
+          }}
+        />
+      )}
 
       <div className="p-6 flex flex-col gap-6 h-full">
         {/* Header */}
