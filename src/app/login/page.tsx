@@ -4,8 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/lib/theme-context";
+import { useI18n } from "@/lib/i18n-context";
 import { DEFAULT_ROUTE } from "@/lib/permissions";
+import { LOCALE_FLAGS, type Locale } from "@/lib/i18n/translations";
 import type { UserRole } from "@/types";
+
+const locales: Locale[] = ["th", "en", "ja", "ko"];
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -14,6 +18,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { theme, toggle } = useTheme();
+  const { locale, setLocale, t } = useI18n();
   const supabase = createClient();
 
   async function handleLogin(e: React.FormEvent) {
@@ -29,7 +34,7 @@ export default function LoginPage() {
     if (authError) {
       setError(
         authError.message === "Invalid login credentials"
-          ? "อีเมลหรือรหัสผ่านไม่ถูกต้อง"
+          ? t.login.invalidCredentials
           : authError.message
       );
       setLoading(false);
@@ -42,13 +47,27 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-full flex items-center justify-center p-4 page-bg relative">
-      <button
-        onClick={toggle}
-        className="absolute top-4 right-4 text-2xl"
-        style={{ color: "var(--text-muted)" }}
-      >
-        {theme === "dark" ? "🌙" : "☀️"}
-      </button>
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <div className="flex gap-1">
+          {locales.map((l) => (
+            <button
+              key={l}
+              onClick={() => setLocale(l)}
+              style={locale === l ? { background: "var(--blue-bg)", border: "1px solid var(--blue-border)" } : { background: "var(--bg-card)", border: "1px solid var(--border)" }}
+              className="w-8 h-8 rounded-lg text-sm transition-all flex items-center justify-center"
+            >
+              {LOCALE_FLAGS[l]}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={toggle}
+          className="text-2xl"
+          style={{ color: "var(--text-muted)" }}
+        >
+          {theme === "dark" ? "🌙" : "☀️"}
+        </button>
+      </div>
 
       <div className="w-full max-w-sm animate-fade-in">
         <div className="text-center mb-8">
@@ -60,7 +79,7 @@ export default function LoginPage() {
             restro<span style={{ color: "var(--blue)" }}>flow</span>
           </h1>
           <p style={{ color: "var(--text-muted)" }} className="text-sm mt-2">
-            ระบบจัดการร้านอาหาร
+            {t.login.subtitle}
           </p>
         </div>
 
@@ -69,7 +88,7 @@ export default function LoginPage() {
             style={{ color: "var(--text-primary)" }}
             className="text-lg font-bold text-center"
           >
-            เข้าสู่ระบบ
+            {t.login.title}
           </h2>
 
           {error && (
@@ -86,11 +105,8 @@ export default function LoginPage() {
           )}
 
           <div className="flex flex-col gap-1.5">
-            <label
-              style={{ color: "var(--text-muted)" }}
-              className="text-xs font-semibold"
-            >
-              อีเมล
+            <label style={{ color: "var(--text-muted)" }} className="text-xs font-semibold">
+              {t.login.email}
             </label>
             <input
               type="email"
@@ -104,11 +120,8 @@ export default function LoginPage() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label
-              style={{ color: "var(--text-muted)" }}
-              className="text-xs font-semibold"
-            >
-              รหัสผ่าน
+            <label style={{ color: "var(--text-muted)" }} className="text-xs font-semibold">
+              {t.login.password}
             </label>
             <input
               type="password"
@@ -125,27 +138,17 @@ export default function LoginPage() {
             disabled={loading || !email || !password}
             style={
               !loading && email && password
-                ? {
-                    background: "var(--blue-grad)",
-                    color: "#fff",
-                    boxShadow: "0 4px 16px var(--blue-border)",
-                  }
-                : {
-                    background: "var(--border)",
-                    color: "var(--text-dim)",
-                  }
+                ? { background: "var(--blue-grad)", color: "#fff", boxShadow: "0 4px 16px var(--blue-border)" }
+                : { background: "var(--border)", color: "var(--text-dim)" }
             }
             className="w-full py-3 rounded-xl font-bold text-sm transition-all mt-2"
           >
-            {loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
+            {loading ? t.login.loggingIn : t.login.loginBtn}
           </button>
         </form>
 
-        <p
-          style={{ color: "var(--text-dim)" }}
-          className="text-xs text-center mt-6"
-        >
-          Restroflow v1.0 · ระบบจัดการร้านอาหารครบวงจร
+        <p style={{ color: "var(--text-dim)" }} className="text-xs text-center mt-6">
+          Restroflow v1.0 · {t.login.appDesc}
         </p>
       </div>
     </div>

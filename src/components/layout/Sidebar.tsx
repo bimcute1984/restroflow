@@ -5,16 +5,21 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useTheme } from "@/lib/theme-context";
 import { useAuth } from "@/lib/auth-context";
-import { getAllowedRoutes, ROLE_LABELS, ROLE_COLORS } from "@/lib/permissions";
+import { useI18n } from "@/lib/i18n-context";
+import { getAllowedRoutes, ROLE_COLORS } from "@/lib/permissions";
+import { LOCALE_FLAGS, type Locale } from "@/lib/i18n/translations";
 
 const allNavItems = [
-  { href: "/orders", icon: "🍽️", label: "สั่งอาหาร", colorVar: "--blue", bgVar: "--blue-bg", borderVar: "--blue-border" },
-  { href: "/queue", icon: "🪑", label: "คิว & โต๊ะ", colorVar: "--yellow", bgVar: "--yellow-bg", borderVar: "--yellow-border" },
-  { href: "/inventory", icon: "📦", label: "สต๊อก", colorVar: "--cyan", bgVar: "--cyan-bg", borderVar: "--cyan-border" },
-  { href: "/menu", icon: "📋", label: "เมนู", colorVar: "--red", bgVar: "--red-bg", borderVar: "--red-border" },
-  { href: "/reports", icon: "📊", label: "รายงาน", colorVar: "--green", bgVar: "--green-bg", borderVar: "--green-border" },
-  { href: "/staff", icon: "👥", label: "จัดการทีม", colorVar: "--purple", bgVar: "--purple-bg", borderVar: "--purple-border" },
+  { href: "/orders", icon: "🍽️", key: "orders" as const, colorVar: "--blue", bgVar: "--blue-bg", borderVar: "--blue-border" },
+  { href: "/queue", icon: "🪑", key: "queue" as const, colorVar: "--yellow", bgVar: "--yellow-bg", borderVar: "--yellow-border" },
+  { href: "/inventory", icon: "📦", key: "inventory" as const, colorVar: "--cyan", bgVar: "--cyan-bg", borderVar: "--cyan-border" },
+  { href: "/menu", icon: "📋", key: "menu" as const, colorVar: "--red", bgVar: "--red-bg", borderVar: "--red-border" },
+  { href: "/reports", icon: "📊", key: "reports" as const, colorVar: "--green", bgVar: "--green-bg", borderVar: "--green-border" },
+  { href: "/staff", icon: "👥", key: "staff" as const, colorVar: "--purple", bgVar: "--purple-bg", borderVar: "--purple-border" },
+  { href: "/qr", icon: "📱", key: "qr" as const, colorVar: "--green", bgVar: "--green-bg", borderVar: "--green-border" },
 ];
+
+const locales: Locale[] = ["th", "en", "ja", "ko"];
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -22,6 +27,7 @@ export default function Sidebar() {
   const [open, setOpen] = useState(false);
   const { theme, toggle } = useTheme();
   const { profile, signOut } = useAuth();
+  const { locale, setLocale, t } = useI18n();
 
   const allowedRoutes = profile ? getAllowedRoutes(profile.role) : [];
   const navItems = allNavItems.filter((item) => allowedRoutes.includes(item.href));
@@ -39,6 +45,22 @@ export default function Sidebar() {
     await signOut();
     router.push("/login");
   }
+
+  const langSwitcher = (
+    <div className="flex gap-1">
+      {locales.map((l) => (
+        <button
+          key={l}
+          onClick={() => setLocale(l)}
+          style={locale === l ? { background: "var(--blue-bg)", border: "1px solid var(--blue-border)" } : { background: "var(--bg-deep)", border: "1px solid var(--border)" }}
+          className="flex-1 py-1.5 rounded-lg text-sm transition-all"
+          title={l}
+        >
+          {LOCALE_FLAGS[l]}
+        </button>
+      ))}
+    </div>
+  );
 
   const userInfo = profile && roleColors && (
     <div className="flex flex-col gap-2">
@@ -58,7 +80,7 @@ export default function Sidebar() {
             }}
             className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0"
           >
-            {ROLE_LABELS[profile.role]}
+            {t.roles[profile.role]}
           </span>
         </div>
         <span style={{ color: "var(--text-dim)" }} className="text-[10px] truncate">
@@ -70,7 +92,7 @@ export default function Sidebar() {
         style={{ background: "var(--red-bg)", color: "var(--red)", border: "1px solid var(--red-border)" }}
         className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:brightness-110 w-full"
       >
-        ออกจากระบบ
+        {t.sidebar.logout}
       </button>
     </div>
   );
@@ -82,7 +104,7 @@ export default function Sidebar() {
       className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all hover:brightness-110 w-full"
     >
       <span className="text-base">{theme === "dark" ? "🌙" : "☀️"}</span>
-      <span>{theme === "dark" ? "Dark Mode" : "Light Mode"}</span>
+      <span>{theme === "dark" ? t.sidebar.darkMode : t.sidebar.lightMode}</span>
     </button>
   );
 
@@ -102,7 +124,7 @@ export default function Sidebar() {
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-[var(--bg-hover)]"
           >
             <span className="text-xl shrink-0">{item.icon}</span>
-            <span className="text-sm font-medium">{item.label}</span>
+            <span className="text-sm font-medium">{t.nav[item.key]}</span>
           </Link>
         );
       })}
@@ -152,6 +174,7 @@ export default function Sidebar() {
               <button onClick={() => setOpen(false)} style={{ color: "var(--text-dim)" }} className="text-lg font-bold">✕</button>
             </div>
             <nav className="flex-1 py-4 flex flex-col gap-1 px-3">{nav}</nav>
+            <div className="px-3 pb-2">{langSwitcher}</div>
             <div className="px-3 pb-2">{themeToggle}</div>
             <div className="px-3 pb-3">{userInfo}</div>
           </aside>
@@ -169,6 +192,7 @@ export default function Sidebar() {
           </span>
         </div>
         <nav className="flex-1 py-4 flex flex-col gap-1 px-3">{nav}</nav>
+        <div className="px-3 pb-2">{langSwitcher}</div>
         <div className="px-3 pb-2">{themeToggle}</div>
         <div className="px-3 pb-3">{userInfo}</div>
       </aside>

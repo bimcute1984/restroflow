@@ -1,12 +1,5 @@
 import type { UserRole } from "@/types";
 
-export const ROLE_LABELS: Record<UserRole, string> = {
-  owner: "เจ้าของร้าน",
-  front: "พนักงานหน้าร้าน",
-  kitchen: "พนักงานครัว",
-  stock: "พนักงานคุมสต๊อก",
-};
-
 export const ROLE_COLORS: Record<UserRole, { color: string; bg: string; border: string }> = {
   owner: { color: "--purple", bg: "--purple-bg", border: "--purple-border" },
   front: { color: "--blue", bg: "--blue-bg", border: "--blue-border" },
@@ -15,8 +8,8 @@ export const ROLE_COLORS: Record<UserRole, { color: string; bg: string; border: 
 };
 
 const ROLE_ROUTES: Record<UserRole, string[]> = {
-  owner: ["/orders", "/queue", "/inventory", "/menu", "/reports", "/staff"],
-  front: ["/orders", "/queue"],
+  owner: ["/orders", "/queue", "/inventory", "/menu", "/reports", "/staff", "/qr"],
+  front: ["/orders", "/queue", "/qr"],
   kitchen: ["/orders"],
   stock: ["/inventory"],
 };

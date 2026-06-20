@@ -5,10 +5,12 @@ import { useEffect } from "react";
 import Sidebar from "@/components/layout/Sidebar";
 import { OrderProvider } from "@/lib/order-context";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
+import { useI18n } from "@/lib/i18n-context";
 import { canAccess, DEFAULT_ROUTE } from "@/lib/permissions";
 
 function RoleGuard({ children }: { children: React.ReactNode }) {
   const { profile, loading } = useAuth();
+  const { t } = useI18n();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -27,7 +29,7 @@ function RoleGuard({ children }: { children: React.ReactNode }) {
       >
         <div className="text-center animate-fade-in">
           <div className="text-4xl mb-3">🍽️</div>
-          <p className="text-sm font-medium">กำลังโหลด...</p>
+          <p className="text-sm font-medium">{t.common.loading}</p>
         </div>
       </div>
     );
