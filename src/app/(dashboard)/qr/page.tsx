@@ -67,39 +67,48 @@ export default function QRPage() {
         </button>
       </div>
 
-      {/* Visible grid */}
+      {/* Regular tables */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 animate-fade-in">
-        {tables.map((table) => {
+        {tables.filter((t) => t.number < 100).map((table) => {
           const url = `${baseUrl}/scan/${table.number}`;
           return (
-            <div
-              key={table.id}
-              className="card-glass p-4 flex flex-col items-center gap-3 transition-all hover:translate-y-[-2px]"
-            >
+            <div key={table.id} className="card-glass p-4 flex flex-col items-center gap-3 transition-all hover:translate-y-[-2px]">
               <div style={{ background: "#fff", padding: "8px", borderRadius: "12px" }}>
                 <QRCodeSVG value={url} size={120} level="M" />
               </div>
               <div className="text-center">
-                <div style={{ color: "var(--text-primary)" }} className="font-bold text-sm">
-                  {t.qr.table} {table.number}
-                </div>
-                <div style={{ color: "var(--text-dim)" }} className="text-xs">
-                  {table.capacity} {t.qr.seats}
-                </div>
+                <div style={{ color: "var(--text-primary)" }} className="font-bold text-sm">{t.qr.table} {table.number}</div>
+                <div style={{ color: "var(--text-dim)" }} className="text-xs">{table.capacity} {t.qr.seats}</div>
               </div>
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: "var(--blue)" }}
-                className="text-[10px] hover:underline"
-              >
-                {url}
-              </a>
+              <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: "var(--blue)" }} className="text-[10px] hover:underline">{url}</a>
             </div>
           );
         })}
       </div>
+
+      {/* Banquet rooms */}
+      {tables.some((t) => t.number >= 100) && (
+        <>
+          <h2 style={{ color: "var(--text-primary)" }} className="font-bold text-lg animate-fade-in">🏛️ {t.qr.banquetRooms}</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 animate-fade-in">
+            {tables.filter((t) => t.number >= 100).map((table) => {
+              const url = `${baseUrl}/scan/${table.number}`;
+              return (
+                <div key={table.id} className="card-glass p-4 flex flex-col items-center gap-3 transition-all hover:translate-y-[-2px]" style={{ border: "1.5px solid var(--yellow-border)" }}>
+                  <div style={{ background: "#fff", padding: "8px", borderRadius: "12px" }}>
+                    <QRCodeSVG value={url} size={120} level="M" />
+                  </div>
+                  <div className="text-center">
+                    <div style={{ color: "var(--text-primary)" }} className="font-bold text-sm">🏛️ R{table.number - 100}</div>
+                    <div style={{ color: "var(--text-dim)" }} className="text-xs">{table.capacity} {t.qr.seats}</div>
+                  </div>
+                  <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: "var(--blue)" }} className="text-[10px] hover:underline">{url}</a>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       {/* Hidden print version */}
       <div className="hidden">

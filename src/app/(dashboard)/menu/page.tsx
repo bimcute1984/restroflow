@@ -6,26 +6,30 @@ import { fetchMenuItemsFull, fetchCategories, upsertMenuItem, toggleMenuAvailabi
 import MenuItemModal from "@/components/menu/MenuItemModal";
 import RecipeModal from "@/components/menu/RecipeModal";
 import { useI18n } from "@/lib/i18n-context";
+import { localizedName, localizedDesc } from "@/lib/menu-i18n";
+import type { Locale } from "@/lib/i18n/translations";
 
 const categoryEmoji: Record<string, string> = { "เครื่องดื่ม": "🥤", "ซุป": "🍲", "แกง": "🍛", "ยำ/สลัด": "🥗", "ของหวาน": "🍮", "เครื่องเคียง": "🍚", "อาหารจานหลัก": "🍽️" };
 
-function MenuItemCard({ item, onToggle, onEdit, onRecipe, labels }: { item: MenuItemFull; onToggle: (id: string) => void; onEdit: (item: MenuItemFull) => void; onRecipe: (item: MenuItemFull) => void; labels: { on: string; off: string; edit: string; recipe: string } }) {
+function MenuItemCard({ item, locale, onToggle, onEdit, onRecipe, labels }: { item: MenuItemFull; locale: Locale; onToggle: (id: string) => void; onEdit: (item: MenuItemFull) => void; onRecipe: (item: MenuItemFull) => void; labels: { on: string; off: string; edit: string; recipe: string } }) {
   const emoji = categoryEmoji[item.category] || "🍽️";
+  const displayName = localizedName(item, locale);
+  const displayDesc = localizedDesc(item, locale);
   return (
     <div style={{ background: "var(--bg-card)", border: `1.5px solid ${item.available ? "var(--border)" : "var(--red-border)"}`, opacity: item.available ? 1 : 0.6, boxShadow: "var(--card-shadow)" }} className="rounded-2xl p-3 md:p-4 flex flex-col gap-2 md:gap-3 transition-all hover:translate-y-[-2px]">
       <div style={{ background: "var(--bg-deep)", border: "1px solid var(--border)" }} className="rounded-xl h-20 md:h-28 flex items-center justify-center overflow-hidden">
         {item.image ? (
-          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+          <img src={item.image} alt={displayName} className="w-full h-full object-cover" />
         ) : (
           <span className="text-3xl md:text-4xl">{emoji}</span>
         )}
       </div>
       <div className="flex-1">
         <div className="flex items-start justify-between gap-1 md:gap-2">
-          <span style={{ color: "var(--text-primary)" }} className="font-semibold text-xs md:text-sm">{item.name}</span>
+          <span style={{ color: "var(--text-primary)" }} className="font-semibold text-xs md:text-sm">{displayName}</span>
           {item.featured && <span style={{ background: "var(--yellow-bg)", color: "var(--yellow)", border: "1px solid var(--yellow-border)" }} className="text-[10px] px-1.5 md:px-2 py-0.5 rounded-full shrink-0">⭐</span>}
         </div>
-        {item.description && <p style={{ color: "var(--text-dim)" }} className="text-[10px] md:text-xs mt-1 line-clamp-2">{item.description}</p>}
+        {displayDesc && <p style={{ color: "var(--text-dim)" }} className="text-[10px] md:text-xs mt-1 line-clamp-2">{displayDesc}</p>}
       </div>
       <div className="flex items-center justify-between">
         <span style={{ color: "var(--blue)" }} className="font-bold text-sm md:text-base">฿{item.price}</span>
@@ -40,7 +44,7 @@ function MenuItemCard({ item, onToggle, onEdit, onRecipe, labels }: { item: Menu
 }
 
 export default function MenuPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [items, setItems] = useState<MenuItemFull[]>([]);
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,10 +76,8 @@ export default function MenuPage() {
   async function saveItem(updated: MenuItemFull) {
     try {
       await upsertMenuItem(updated);
-      setItems((prev) => {
-        const exists = prev.find((i) => i.id === updated.id);
-        return exists ? prev.map((i) => (i.id === updated.id ? updated : i)) : [updated, ...prev];
-      });
+      const fresh = await fetchMenuItemsFull();
+      setItems(fresh);
     } catch (e) {
       console.error("Failed to save:", e);
     }
@@ -83,7 +85,12 @@ export default function MenuPage() {
   }
 
   const catNames = [t.common.all, ...categories.map((c) => c.name)];
-  const filtered = items.filter((item) => (selectedCat === t.common.all || item.category === selectedCat) && item.name.toLowerCase().includes(search.toLowerCase()));
+  const filtered = items.filter((item) => {
+    if (selectedCat !== t.common.all && item.category !== selectedCat) return false;
+    const q = search.toLowerCase();
+    if (!q) return true;
+    return localizedName(item, locale).toLowerCase().includes(q) || item.name.toLowerCase().includes(q);
+  });
   const stats = { total: items.length, available: items.filter((i) => i.available).length, featured: items.filter((i) => i.featured).length, unavailable: items.filter((i) => !i.available).length };
 
   if (loading) {
@@ -138,7 +145,7 @@ export default function MenuPage() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 animate-fade-in">
-          {filtered.map((item) => <MenuItemCard key={item.id} item={item} onToggle={handleToggle} onEdit={(i) => setModalItem(i)} onRecipe={(i) => setRecipeItem(i)} labels={{ on: t.common.on, off: t.common.off, edit: t.common.edit, recipe: t.menu.recipe.title }} />)}
+          {filtered.map((item) => <MenuItemCard key={item.id} item={item} locale={locale} onToggle={handleToggle} onEdit={(i) => setModalItem(i)} onRecipe={(i) => setRecipeItem(i)} labels={{ on: t.common.on, off: t.common.off, edit: t.common.edit, recipe: t.menu.recipe.title }} />)}
           {filtered.length === 0 && <div style={{ color: "var(--text-dim)" }} className="col-span-full text-center py-16 text-sm">{t.menu.noMenu}</div>}
         </div>
       </div>

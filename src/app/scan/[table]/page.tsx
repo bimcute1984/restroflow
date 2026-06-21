@@ -6,6 +6,7 @@ import { fetchMenuItems, fetchCategories, createOrder } from "@/lib/supabase/que
 import { useI18n } from "@/lib/i18n-context";
 import { useTheme } from "@/lib/theme-context";
 import { LOCALE_FLAGS, type Locale } from "@/lib/i18n/translations";
+import { localizedName, localizedDesc } from "@/lib/menu-i18n";
 import type { MenuCategory } from "@/types";
 
 interface CartItem {
@@ -23,7 +24,7 @@ type PageState = "menu" | "cart" | "success" | "error";
 
 export default function ScanOrderPage({ params }: { params: Promise<{ table: string }> }) {
   const { table: tableNum } = use(params);
-  const { t, locale, setLocale } = useI18n();
+  const { t, locale: currentLocale, setLocale } = useI18n();
   const { theme, toggle } = useTheme();
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [categories, setCategories] = useState<MenuCategory[]>([]);
@@ -155,7 +156,7 @@ export default function ScanOrderPage({ params }: { params: Promise<{ table: str
               <button
                 key={l}
                 onClick={() => setLocale(l)}
-                style={locale === l ? { background: "var(--blue-bg)", border: "1px solid var(--blue-border)" } : { background: "var(--bg-card)", border: "1px solid var(--border)" }}
+                style={currentLocale === l ? { background: "var(--blue-bg)", border: "1px solid var(--blue-border)" } : { background: "var(--bg-card)", border: "1px solid var(--border)" }}
                 className="w-7 h-7 rounded-lg text-xs transition-all flex items-center justify-center"
               >
                 {LOCALE_FLAGS[l]}
@@ -215,15 +216,15 @@ export default function ScanOrderPage({ params }: { params: Promise<{ table: str
                 className="rounded-lg h-24 flex items-center justify-center overflow-hidden"
               >
                 {item.image ? (
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                  <img src={item.image} alt={localizedName(item, currentLocale)} className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-2xl">{categoryEmoji[item.category] || "🍽️"}</span>
                 )}
               </div>
               <div>
-                <div style={{ color: "var(--text-primary)" }} className="text-xs font-semibold line-clamp-1">{item.name}</div>
-                {item.description && (
-                  <div style={{ color: "var(--text-dim)" }} className="text-[10px] line-clamp-1 mt-0.5">{item.description}</div>
+                <div style={{ color: "var(--text-primary)" }} className="text-xs font-semibold line-clamp-1">{localizedName(item, currentLocale)}</div>
+                {localizedDesc(item, currentLocale) && (
+                  <div style={{ color: "var(--text-dim)" }} className="text-[10px] line-clamp-1 mt-0.5">{localizedDesc(item, currentLocale)}</div>
                 )}
               </div>
               <div className="flex items-center justify-between mt-auto">
@@ -312,7 +313,7 @@ export default function ScanOrderPage({ params }: { params: Promise<{ table: str
               {cart.map(({ item, qty, note }) => (
                 <div key={item.id} style={{ background: "var(--bg-deep)", border: "1px solid var(--border)" }} className="rounded-xl p-3">
                   <div className="flex items-center justify-between mb-2">
-                    <span style={{ color: "var(--text-primary)" }} className="text-sm font-medium">{item.name}</span>
+                    <span style={{ color: "var(--text-primary)" }} className="text-sm font-medium">{localizedName(item, currentLocale)}</span>
                     <span style={{ color: "var(--blue)" }} className="text-sm font-bold">฿{(item.price * qty).toLocaleString()}</span>
                   </div>
                   <div className="flex items-center justify-between">

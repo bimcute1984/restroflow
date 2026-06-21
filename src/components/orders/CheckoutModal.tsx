@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Order, PaymentMethod } from "@/types";
 import { useI18n } from "@/lib/i18n-context";
+import { localizedName } from "@/lib/menu-i18n";
 
 const PAYMENT_METHODS: { key: PaymentMethod; icon: string; labelKey: keyof typeof LABEL_MAP }[] = [
   { key: "cash", icon: "💵", labelKey: "cash" },
@@ -26,7 +27,7 @@ export default function CheckoutModal({ order, onClose, onConfirm }: {
   onClose: () => void;
   onConfirm: (result: CheckoutResult) => void;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
   const [discount, setDiscount] = useState(0);
   const [received, setReceived] = useState("");
@@ -63,7 +64,7 @@ export default function CheckoutModal({ order, onClose, onConfirm }: {
             </div>
             {order.items.map((item, i) => (
               <div key={i} className="flex justify-between text-xs py-1">
-                <span style={{ color: "var(--text-secondary)" }}>{item.menuItem.name} ×{item.quantity}</span>
+                <span style={{ color: "var(--text-secondary)" }}>{localizedName(item.menuItem, locale)} ×{item.quantity}</span>
                 <span style={{ color: "var(--text-primary)" }} className="font-medium">฿{(item.menuItem.price * item.quantity).toLocaleString()}</span>
               </div>
             ))}

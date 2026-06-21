@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { Order, PaymentMethod } from "@/types";
 import { useI18n } from "@/lib/i18n-context";
+import { localizedName } from "@/lib/menu-i18n";
 
 const PAYMENT_LABELS: Record<PaymentMethod, string> = {
   cash: "💵 Cash",
@@ -25,7 +26,7 @@ export default function ReceiptModal({ order, receipt, onClose }: {
   receipt: ReceiptData;
   onClose: () => void;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const printRef = useRef<HTMLDivElement>(null);
 
   function handlePrint() {
@@ -96,7 +97,7 @@ export default function ReceiptModal({ order, receipt, onClose }: {
 
               {order.items.map((item, i) => (
                 <div key={i} className="flex justify-between py-0.5" style={{ color: "var(--text-secondary)" }}>
-                  <span className="flex-1 truncate">{item.menuItem.name}</span>
+                  <span className="flex-1 truncate">{localizedName(item.menuItem, locale)}</span>
                   <span className="w-8 text-right">{item.quantity}</span>
                   <span className="w-16 text-right" style={{ color: "var(--text-primary)" }}>฿{(item.menuItem.price * item.quantity).toLocaleString()}</span>
                 </div>

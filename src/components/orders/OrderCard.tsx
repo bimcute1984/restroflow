@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Order, OrderStatus } from "@/types";
 import { useI18n } from "@/lib/i18n-context";
+import { localizedName } from "@/lib/menu-i18n";
 
 export default function OrderCard({ order, onAdvance, onCheckout, onCancel }: {
   order: Order;
@@ -11,7 +12,7 @@ export default function OrderCard({ order, onAdvance, onCheckout, onCancel }: {
   onCancel?: () => void;
 }) {
   const [mounted, setMounted] = useState(false);
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   useEffect(() => setMounted(true), []);
 
   const statusConfig: Record<OrderStatus, { label: string; colorVar: string; bgVar: string; borderVar: string }> = {
@@ -59,7 +60,7 @@ export default function OrderCard({ order, onAdvance, onCheckout, onCancel }: {
       <div className="flex flex-col gap-1.5">
         {order.items.map((item, i) => (
           <div key={i} className="flex justify-between items-center">
-            <span style={{ color: "var(--text-secondary)" }} className="text-xs md:text-sm truncate">{item.menuItem.name}</span>
+            <span style={{ color: "var(--text-secondary)" }} className="text-xs md:text-sm truncate">{localizedName(item.menuItem, locale)}</span>
             <span style={{ color: "var(--text-dim)" }} className="text-xs md:text-sm shrink-0 ml-2">×{item.quantity}</span>
           </div>
         ))}

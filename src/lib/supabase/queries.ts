@@ -3,6 +3,7 @@ import type {
   Order, MenuItem, MenuItemFull, MenuCategory,
   InventoryItem, Table, QueueEntry,
   OrderStatus, OrderType, QueueStatus,
+  MenuItemTranslations,
 } from "@/types";
 
 function sb() { return createClient(); }
@@ -59,6 +60,7 @@ export async function fetchMenuItems(): Promise<MenuItem[]> {
     category: (d.category as { name: string })?.name ?? "",
     available: d.available as boolean,
     description: d.description as string | undefined,
+    translations: (d.translations as MenuItemTranslations) || undefined,
   }));
 }
 
@@ -78,11 +80,12 @@ export async function fetchMenuItemsFull(): Promise<MenuItemFull[]> {
     available: d.available as boolean,
     featured: d.featured as boolean,
     description: d.description as string | undefined,
+    translations: (d.translations as MenuItemTranslations) || undefined,
   }));
 }
 
 export async function upsertMenuItem(item: MenuItemFull): Promise<void> {
-  const { error } = await sb().from("MenuItem").upsert({
+  const base = {
     id: item.id,
     name: item.name,
     price: item.price,
@@ -90,9 +93,19 @@ export async function upsertMenuItem(item: MenuItemFull): Promise<void> {
     available: item.available,
     featured: item.featured,
     description: item.description || null,
+    image: item.image || null,
     updatedAt: new Date().toISOString(),
-  });
-  if (error) throw error;
+  };
+  const withTrans = { ...base, translations: item.translations || {} };
+  const { error } = await sb().from("MenuItem").upsert(withTrans);
+  if (error) {
+    if (error.code === "PGRST204") {
+      const { error: retryError } = await sb().from("MenuItem").upsert(base);
+      if (retryError) throw retryError;
+      return;
+    }
+    throw error;
+  }
 }
 
 export async function toggleMenuAvailability(id: string, available: boolean): Promise<void> {
@@ -143,6 +156,7 @@ export async function fetchOrders(): Promise<Order[]> {
             image: mi?.image as string | undefined,
             category: cat?.name ?? "",
             available: mi?.available as boolean,
+            translations: (mi?.translations as MenuItemTranslations) || undefined,
           },
           quantity: oi.quantity as number,
           note: oi.note as string | undefined,
@@ -301,15 +315,54 @@ export async function fetchTables(): Promise<Table[]> {
     number: d.number as number,
     capacity: d.capacity as number,
     status: toAppTableStatus(d.status as string),
+    reservedBy: d.reservedBy as string | undefined,
+    reservedTime: d.reservedTime ? new Date(d.reservedTime as string) : undefined,
   }));
 }
 
 export async function updateTableStatus(id: string, status: Table["status"]): Promise<void> {
+  const update: Record<string, unknown> = { status: status.toUpperCase() };
+  if (status !== "reserved") {
+    update.reservedBy = null;
+    update.reservedTime = null;
+  }
   const { error } = await sb()
     .from("Table")
-    .update({ status: status.toUpperCase() })
+    .update(update)
     .eq("id", id);
   if (error) throw error;
+}
+
+export async function reserveTable(id: string, reservedBy: string, reservedTime: Date): Promise<void> {
+  const { error } = await sb()
+    .from("Table")
+    .update({
+      status: "RESERVED",
+      reservedBy,
+      reservedTime: reservedTime.toISOString(),
+    })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function cancelExpiredReservations(): Promise<string[]> {
+  const now = new Date().toISOString();
+  const { data, error } = await sb()
+    .from("Table")
+    .select("id")
+    .eq("status", "RESERVED")
+    .not("reservedTime", "is", null)
+    .lt("reservedTime", now);
+  if (error) throw error;
+  const ids = (data ?? []).map((d: Record<string, unknown>) => d.id as string);
+  if (ids.length > 0) {
+    const { error: updateError } = await sb()
+      .from("Table")
+      .update({ status: "AVAILABLE", reservedBy: null, reservedTime: null })
+      .in("id", ids);
+    if (updateError) throw updateError;
+  }
+  return ids;
 }
 
 // ── Queue ──
@@ -537,6 +590,7 @@ export async function fetchOrderHistory(limit: number = 50): Promise<Order[]> {
             image: mi?.image as string | undefined,
             category: cat?.name ?? "",
             available: mi?.available as boolean,
+            translations: (mi?.translations as MenuItemTranslations) || undefined,
           },
           quantity: oi.quantity as number,
           note: oi.note as string | undefined,

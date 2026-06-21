@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { MenuItem, OrderType } from "@/types";
 import { fetchMenuItems } from "@/lib/supabase/queries";
 import { useI18n } from "@/lib/i18n-context";
+import { localizedName } from "@/lib/menu-i18n";
 
 interface CartItem { item: MenuItem; qty: number }
 
@@ -17,7 +18,7 @@ export default function NewOrderModal({ onClose, onSubmit }: {
     total: number;
   }) => void;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loadingMenu, setLoadingMenu] = useState(true);
   const [orderType, setOrderType] = useState<OrderType>("dine-in");
@@ -92,7 +93,7 @@ export default function NewOrderModal({ onClose, onSubmit }: {
                       </div>
                     )}
                     <div className="p-3">
-                      <div style={{ color: "var(--text-primary)" }} className="text-xs md:text-sm font-medium">{item.name}</div>
+                      <div style={{ color: "var(--text-primary)" }} className="text-xs md:text-sm font-medium">{localizedName(item, locale)}</div>
                       <div className="flex items-center justify-between mt-1">
                         <span style={{ color: "var(--blue)" }} className="text-xs md:text-sm font-bold">฿{item.price}</span>
                         {inCart && <span style={{ background: "var(--blue-grad)", color: "#fff" }} className="text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">{inCart.qty}</span>}
@@ -113,7 +114,7 @@ export default function NewOrderModal({ onClose, onSubmit }: {
               {cart.map(({ item, qty }) => (
                 <div key={item.id} className="flex items-center gap-2">
                   <div className="flex-1 min-w-0">
-                    <div style={{ color: "var(--text-primary)" }} className="text-xs truncate">{item.name}</div>
+                    <div style={{ color: "var(--text-primary)" }} className="text-xs truncate">{localizedName(item, locale)}</div>
                     <div style={{ color: "var(--text-dim)" }} className="text-xs">฿{item.price}</div>
                   </div>
                   <div className="flex items-center gap-1">

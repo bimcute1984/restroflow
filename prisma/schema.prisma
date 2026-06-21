@@ -15,28 +15,31 @@ model MenuCategory {
 }
 
 model MenuItem {
-  id          String       @id @default(cuid())
-  name        String
-  price       Float
-  description String?
-  image       String?
-  available   Boolean      @default(true)
-  featured    Boolean      @default(false)
-  categoryId  String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  category    MenuCategory @relation(fields: [categoryId], references: [id])
-  orderItems  OrderItem[]
-  recipeItems RecipeItem[]
+  id           String       @id @default(cuid())
+  name         String
+  price        Float
+  description  String?
+  image        String?
+  available    Boolean      @default(true)
+  featured     Boolean      @default(false)
+  translations Json         @default("{}")
+  categoryId   String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  category     MenuCategory @relation(fields: [categoryId], references: [id])
+  orderItems   OrderItem[]
+  recipeItems  RecipeItem[]
 }
 
 model Table {
-  id       String       @id @default(cuid())
-  number   Int          @unique
-  capacity Int
-  status   TableStatus  @default(AVAILABLE)
-  orders   Order[]
-  queues   QueueEntry[]
+  id           String       @id @default(cuid())
+  number       Int          @unique
+  capacity     Int
+  status       TableStatus  @default(AVAILABLE)
+  reservedBy   String?
+  reservedTime DateTime?
+  orders       Order[]
+  queues       QueueEntry[]
 }
 
 model QueueEntry {

@@ -11,6 +11,13 @@ export type OrderStatus = "pending" | "preparing" | "ready" | "completed" | "can
 export type OrderType = "dine-in" | "takeaway" | "delivery";
 export type PaymentMethod = "cash" | "promptpay" | "credit_card" | "line_pay" | "true_money";
 
+export interface MenuItemTranslation {
+  name?: string;
+  description?: string;
+}
+
+export type MenuItemTranslations = Partial<Record<"en" | "ja" | "ko", MenuItemTranslation>>;
+
 export interface MenuItem {
   id: string;
   name: string;
@@ -19,6 +26,7 @@ export interface MenuItem {
   category: string;
   available: boolean;
   description?: string;
+  translations?: MenuItemTranslations;
 }
 
 export interface OrderItem {
@@ -44,6 +52,8 @@ export interface Table {
   capacity: number;
   status: "available" | "occupied" | "reserved" | "cleaning";
   currentOrderId?: string;
+  reservedBy?: string;
+  reservedTime?: Date;
 }
 
 export type QueueStatus = "waiting" | "called" | "seated" | "cancelled";
