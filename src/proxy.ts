@@ -32,7 +32,7 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && pathname !== "/login" && !pathname.startsWith("/scan") && !pathname.startsWith("/api/")) {
+  if (!user && pathname !== "/login" && !pathname.startsWith("/scan") && !pathname.startsWith("/api/") && !pathname.startsWith("/sw.js") && !pathname.startsWith("/manifest.json") && !pathname.startsWith("/icons/")) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);

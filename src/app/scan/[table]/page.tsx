@@ -139,8 +139,8 @@ export default function ScanOrderPage({ params }: { params: Promise<{ table: str
     <div className="min-h-screen page-bg flex flex-col">
       {/* Header */}
       <header
-        className="sticky top-0 z-30 px-4 py-3 flex items-center justify-between"
-        style={{ background: "var(--bg-base)", borderBottom: "1px solid var(--border)" }}
+        className="sticky top-0 z-30 px-4 py-3 flex items-center justify-between safe-top"
+        style={{ background: "color-mix(in srgb, var(--bg-base) 85%, transparent)", backdropFilter: "blur(12px) saturate(1.5)", WebkitBackdropFilter: "blur(12px) saturate(1.5)", borderBottom: "1px solid var(--border)" }}
       >
         <div>
           <span style={{ color: "var(--text-primary)" }} className="font-bold text-lg">
@@ -172,7 +172,7 @@ export default function ScanOrderPage({ params }: { params: Promise<{ table: str
       {/* Category tabs */}
       <div
         className="sticky top-[57px] z-20 px-3 py-2 flex gap-2 overflow-x-auto"
-        style={{ background: "var(--bg-base)", borderBottom: "1px solid var(--border)" }}
+        style={{ background: "color-mix(in srgb, var(--bg-base) 90%, transparent)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", borderBottom: "1px solid var(--border)" }}
       >
         <button
           onClick={() => setSelectedCat("all")}
@@ -209,7 +209,7 @@ export default function ScanOrderPage({ params }: { params: Promise<{ table: str
                 border: inCart ? "1.5px solid var(--blue-border)" : "1.5px solid var(--border)",
                 boxShadow: "var(--card-shadow)",
               }}
-              className="rounded-xl p-3 flex flex-col gap-2 transition-all"
+              className="rounded-xl p-3 flex flex-col gap-2 transition-all btn-press"
             >
               <div
                 style={{ background: "var(--bg-deep)", border: "1px solid var(--border)" }}

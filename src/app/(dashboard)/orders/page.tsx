@@ -53,7 +53,14 @@ export default function OrdersPage() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-full page-bg"><span style={{ color: "var(--text-dim)" }} className="text-sm">{t.common.loading}</span></div>;
+    return (
+      <div className="flex items-center justify-center h-full page-bg">
+        <div className="text-center animate-fade-in">
+          <div className="text-5xl mb-3 animate-float">🍽️</div>
+          <p style={{ color: "var(--text-muted)" }} className="text-sm font-medium">{t.common.loading}</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -92,17 +99,22 @@ export default function OrdersPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-fade-in">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: t.orders.todayOrders, value: stats.total, v: "--blue" },
-            { label: t.orders.waiting, value: stats.pending, v: "--yellow" },
-            { label: t.orders.preparing, value: stats.preparing, v: "--blue" },
-            { label: t.orders.todayRevenue, value: `฿${todayRevenue.toLocaleString()}`, v: "--green" },
-          ].map((s) => (
-            <div key={s.label} className="stat-card p-4">
+            { label: t.orders.todayOrders, value: stats.total, v: "--blue", icon: "📋" },
+            { label: t.orders.waiting, value: stats.pending, v: "--yellow", icon: "⏳" },
+            { label: t.orders.preparing, value: stats.preparing, v: "--blue", icon: "🔥" },
+            { label: t.orders.todayRevenue, value: `฿${todayRevenue.toLocaleString()}`, v: "--green", icon: "💰" },
+          ].map((s, i) => (
+            <div key={s.label} className={`stat-card p-4 animate-fade-in stagger-${i + 1}`}>
               <div className="glow" style={{ background: `var(${s.v})` }} />
-              <div style={{ color: `var(${s.v})` }} className="text-xl md:text-2xl font-bold relative z-10">{s.value}</div>
-              <div style={{ color: "var(--text-muted)" }} className="text-xs mt-1 relative z-10">{s.label}</div>
+              <div className="flex items-start justify-between relative z-10">
+                <div>
+                  <div style={{ color: `var(${s.v})` }} className="text-xl md:text-2xl font-bold">{s.value}</div>
+                  <div style={{ color: "var(--text-muted)" }} className="text-xs mt-1">{s.label}</div>
+                </div>
+                <span className="text-lg opacity-60">{s.icon}</span>
+              </div>
             </div>
           ))}
         </div>

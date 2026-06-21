@@ -46,15 +46,22 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-full flex items-center justify-center p-4 page-bg relative">
-      <div className="absolute top-4 right-4 flex items-center gap-2">
+    <div className="min-h-full flex items-center justify-center p-4 page-bg relative overflow-hidden">
+      {/* Animated background orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full animate-float" style={{ background: "radial-gradient(circle, color-mix(in srgb, var(--blue) 8%, transparent) 0%, transparent 70%)" }} />
+        <div className="absolute bottom-[-15%] left-[-10%] w-[400px] h-[400px] rounded-full animate-float" style={{ background: "radial-gradient(circle, color-mix(in srgb, var(--purple) 8%, transparent) 0%, transparent 70%)", animationDelay: "1.5s" }} />
+        <div className="absolute top-[30%] left-[20%] w-[300px] h-[300px] rounded-full animate-float" style={{ background: "radial-gradient(circle, color-mix(in srgb, var(--yellow) 5%, transparent) 0%, transparent 70%)", animationDelay: "0.8s" }} />
+      </div>
+
+      <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
         <div className="flex gap-1">
           {locales.map((l) => (
             <button
               key={l}
               onClick={() => setLocale(l)}
               style={locale === l ? { background: "var(--blue-bg)", border: "1px solid var(--blue-border)" } : { background: "var(--bg-card)", border: "1px solid var(--border)" }}
-              className="w-8 h-8 rounded-lg text-sm transition-all flex items-center justify-center"
+              className="w-8 h-8 rounded-lg text-sm transition-all flex items-center justify-center btn-press"
             >
               {LOCALE_FLAGS[l]}
             </button>
@@ -62,28 +69,28 @@ export default function LoginPage() {
         </div>
         <button
           onClick={toggle}
-          className="text-2xl"
+          className="text-2xl btn-press"
           style={{ color: "var(--text-muted)" }}
         >
           {theme === "dark" ? "🌙" : "☀️"}
         </button>
       </div>
 
-      <div className="w-full max-w-sm animate-fade-in">
+      <div className="w-full max-w-sm animate-fade-in relative z-10">
         <div className="text-center mb-8">
-          <div className="text-5xl mb-4">🍽️</div>
+          <div className="text-6xl mb-4 animate-float">🍽️</div>
           <h1
             style={{ color: "var(--text-primary)" }}
-            className="text-3xl font-bold"
+            className="text-4xl font-bold tracking-tight"
           >
-            restro<span style={{ color: "var(--blue)" }}>flow</span>
+            restro<span className="text-gradient">flow</span>
           </h1>
           <p style={{ color: "var(--text-muted)" }} className="text-sm mt-2">
             {t.login.subtitle}
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="card-glass p-6 flex flex-col gap-4">
+        <form onSubmit={handleLogin} className="card-glass p-6 flex flex-col gap-4" style={{ backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}>
           <h2
             style={{ color: "var(--text-primary)" }}
             className="text-lg font-bold text-center"
@@ -138,12 +145,17 @@ export default function LoginPage() {
             disabled={loading || !email || !password}
             style={
               !loading && email && password
-                ? { background: "var(--blue-grad)", color: "#fff", boxShadow: "0 4px 16px var(--blue-border)" }
+                ? { background: "var(--blue-grad)", color: "#fff", boxShadow: "0 4px 20px var(--blue-border)" }
                 : { background: "var(--border)", color: "var(--text-dim)" }
             }
-            className="w-full py-3 rounded-xl font-bold text-sm transition-all mt-2"
+            className="w-full py-3 rounded-xl font-bold text-sm transition-all mt-2 btn-press hover:shadow-lg"
           >
-            {loading ? t.login.loggingIn : t.login.loginBtn}
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                {t.login.loggingIn}
+              </span>
+            ) : t.login.loginBtn}
           </button>
         </form>
 

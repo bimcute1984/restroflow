@@ -118,13 +118,14 @@ export default function Sidebar() {
             href={item.href}
             style={
               active
-                ? { background: `var(${item.bgVar})`, color: `var(${item.colorVar})`, boxShadow: `0 0 20px var(${item.borderVar})` }
+                ? { background: `var(${item.bgVar})`, color: `var(${item.colorVar})`, boxShadow: `0 0 20px var(${item.borderVar})`, border: `1px solid var(${item.borderVar})` }
                 : { color: "var(--text-muted)" }
             }
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-[var(--bg-hover)]"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-[var(--bg-hover)] btn-press"
           >
-            <span className="text-xl shrink-0">{item.icon}</span>
+            <span className={`text-xl shrink-0 ${active ? "animate-scale-in" : ""}`}>{item.icon}</span>
             <span className="text-sm font-medium">{t.nav[item.key]}</span>
+            {active && <span style={{ background: `var(${item.colorVar})` }} className="w-1.5 h-1.5 rounded-full ml-auto animate-scale-in" />}
           </Link>
         );
       })}
@@ -135,8 +136,8 @@ export default function Sidebar() {
     <>
       {/* Mobile top bar */}
       <div
-        className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center h-14 px-4 gap-3"
-        style={{ background: `linear-gradient(180deg, var(--bg-base) 0%, var(--bg-base) 80%, transparent 100%)` }}
+        className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center h-14 px-4 gap-3 safe-top"
+        style={{ background: "color-mix(in srgb, var(--bg-base) 85%, transparent)", backdropFilter: "blur(12px) saturate(1.5)", WebkitBackdropFilter: "blur(12px) saturate(1.5)", borderBottom: "1px solid var(--border)" }}
       >
         <button
           onClick={() => setOpen(true)}
